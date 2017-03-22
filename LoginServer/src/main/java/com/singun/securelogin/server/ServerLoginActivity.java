@@ -27,7 +27,7 @@ import com.singun.securelogin.user.LoginInfo;
  * A login screen that offers login via email/password.
  */
 public class ServerLoginActivity extends AppCompatActivity {
-    private UserLogin mUserLogin = new UserLogin();
+    private UserLogin mUserLogin;
 
     /**
      * Keep track of the login task to ensure we can cancel it if requested.
@@ -44,6 +44,9 @@ public class ServerLoginActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
+
+        mUserLogin = UserLogin.getInstance(getApplicationContext());
+
         // Set up the login form.
         mEmailView = (AutoCompleteTextView) findViewById(R.id.email);
 
@@ -196,6 +199,7 @@ public class ServerLoginActivity extends AppCompatActivity {
 
             if (!TextUtils.isEmpty(token)) {
                 finish();
+                NavUtils.startMainActivity(ServerLoginActivity.this);
             } else {
                 mPasswordView.setError(getString(R.string.error_incorrect_password));
                 mPasswordView.requestFocus();

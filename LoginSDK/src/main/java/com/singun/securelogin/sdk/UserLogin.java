@@ -14,6 +14,8 @@ import android.text.TextUtils;
 
 import com.singun.securelogin.secure.AppInfoUtils;
 import com.singun.securelogin.user.LoginInfo;
+import com.singun.securelogin.user.ProfileStorage;
+import com.singun.securelogin.user.UserProfile;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -25,7 +27,38 @@ import java.util.concurrent.TimeUnit;
  */
 
 public class UserLogin {
-    private static final String SECURE_SIGN_KEY = "7195598ccf30fe51d5dc6f1e94f855e4";
+    private static final String[] SECURE_SIGN_KEY_LIST = {
+            "7195598ccf30fe51d5dc6f1e94f855e4",
+            "a1ef99670163d5a4c424651a16849f51"
+    };
+
+    private static UserLogin sInstance;
+
+    private ProfileStorage mProfileStorage;
+
+    private UserLogin(Context context) {
+        mProfileStorage = new ProfileStorage(context);
+    }
+
+    public static synchronized UserLogin getInstance(Context context) {
+        if (sInstance == null) {
+            sInstance = new UserLogin(context);
+        }
+        return sInstance;
+    }
+
+    public boolean isLogin() {
+        UserProfile userProfile = mProfileStorage.getUserProfile();
+        return userProfile.isValid();
+    }
+
+    public UserProfile getUserProfile() {
+        return mProfileStorage.getUserProfile();
+    }
+
+    public void quickLogin(UserProfile userProfile) {
+        mProfileStorage.setUserProfile(userProfile);
+    }
 
     @WorkerThread
     public LoginInfo login(String accountName, String password) {
@@ -35,7 +68,12 @@ public class UserLogin {
         String token = AppInfoUtils.toHexString(nameData.getBytes());
         loginInfo.setAccountName(accountName);
         loginInfo.setAccountToken(token);
+        mProfileStorage.setUserProfile(loginInfo);
         return loginInfo;
+    }
+
+    public void logout() {
+        mProfileStorage.clearUserProfile();
     }
 
     @WorkerThread
@@ -138,8 +176,10 @@ public class UserLogin {
 
     private boolean checkSecurity(Context context, String packageName) {
         String signMd5 = AppInfoUtils.getSignatureMd5(context, packageName);
-        if (TextUtils.equals(signMd5, SECURE_SIGN_KEY)) {
-            return true;
+        for (String validKey : SECURE_SIGN_KEY_LIST) {
+            if (TextUtils.equals(signMd5, validKey)) {
+                return true;
+            }
         }
         return false;
     }
