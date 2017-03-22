@@ -1,5 +1,7 @@
 package com.singun.securelogin.user;
 
+import android.os.Parcel;
+
 /**
  * Created by singun on 2017/3/22 0022.
  */

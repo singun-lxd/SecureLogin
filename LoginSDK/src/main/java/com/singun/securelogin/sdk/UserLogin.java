@@ -13,6 +13,7 @@ import android.support.annotation.WorkerThread;
 import android.text.TextUtils;
 
 import com.singun.securelogin.secure.AppInfoUtils;
+import com.singun.securelogin.secure.SecureUtil;
 import com.singun.securelogin.user.LoginInfo;
 import com.singun.securelogin.user.ProfileStorage;
 import com.singun.securelogin.user.UserProfile;
@@ -27,11 +28,6 @@ import java.util.concurrent.TimeUnit;
  */
 
 public class UserLogin {
-    private static final String[] SECURE_SIGN_KEY_LIST = {
-            "7195598ccf30fe51d5dc6f1e94f855e4",
-            "a1ef99670163d5a4c424651a16849f51"
-    };
-
     private static UserLogin sInstance;
 
     private ProfileStorage mProfileStorage;
@@ -123,7 +119,7 @@ public class UserLogin {
 
     private LoginInfo getUserInfoFromPackage(Context context, String packageName) {
         final Context appContext = context.getApplicationContext();
-        if (!checkSecurity(appContext, packageName)) {
+        if (!SecureUtil.checkSecurity(appContext, packageName)) {
             return null;
         }
         final LoginInfo loginInfo = createLoginInfo(appContext, packageName);
@@ -148,9 +144,12 @@ public class UserLogin {
             public void onServiceConnected(ComponentName name, IBinder service) {
                 try {
                     LoginAction loginAction = LoginAction.Stub.asInterface(service);
-                    loginInfo.setAccountType(loginAction.getAccountType());
-                    loginInfo.setAccountName(loginAction.getAccountName());
-                    loginInfo.setAccountToken(loginAction.getAccountToken());
+                    UserProfile userProfile = loginAction.getUserProfile();
+                    if (userProfile != null) {
+                        loginInfo.setAccountType(userProfile.getAccountType());
+                        loginInfo.setAccountName(userProfile.getAccountName());
+                        loginInfo.setAccountToken(userProfile.getAccountToken());
+                    }
                 } catch (RemoteException e) {
                 } catch (Exception e) {
                 } finally {
@@ -172,16 +171,6 @@ public class UserLogin {
         }
 
         return loginInfo.isValid() ? loginInfo : null;
-    }
-
-    private boolean checkSecurity(Context context, String packageName) {
-        String signMd5 = AppInfoUtils.getSignatureMd5(context, packageName);
-        for (String validKey : SECURE_SIGN_KEY_LIST) {
-            if (TextUtils.equals(signMd5, validKey)) {
-                return true;
-            }
-        }
-        return false;
     }
 
     private LoginInfo createLoginInfo(Context context, String packageName) {

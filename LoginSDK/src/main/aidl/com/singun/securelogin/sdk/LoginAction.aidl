@@ -1,7 +1,7 @@
 package com.singun.securelogin.sdk;
 
+import com.singun.securelogin.user.UserProfile;
+
 interface LoginAction {
-	int getAccountType();
-	String getAccountName();
-	String getAccountToken();
+	UserProfile getUserProfile();
 }
