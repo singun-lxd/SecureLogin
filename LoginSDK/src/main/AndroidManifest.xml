@@ -4,7 +4,19 @@
 
     <application android:allowBackup="true" android:label="@string/app_name"
         android:supportsRtl="true">
+        <receiver
+            android:name=".LoginSignReceiver"
+            android:exported="true" >
+            <intent-filter>
+                <action android:name="com.singun.securelogin.sign" />
+            </intent-filter>
+        </receiver>
 
+        <service
+            android:name=".SecureLoginService"
+            android:exported="true"
+            android:process=":securelogin" >
+        </service>
     </application>
 
 </manifest>
