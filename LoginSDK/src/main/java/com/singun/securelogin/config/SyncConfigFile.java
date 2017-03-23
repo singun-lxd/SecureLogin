@@ -71,7 +71,9 @@ public class SyncConfigFile implements IConfigFile {
     }
 
     public void removes(List<String> keys) {
-        if (keys == null || keys.size() == 0) return;
+        if (keys == null || keys.size() == 0) {
+            return;
+        }
         String[] keyArray = new String[keys.size()];
         keyArray = keys.toArray(keyArray);
         Uri uri = ConfigProvider.convertUri(mContext, mConfigName);
@@ -87,8 +89,9 @@ public class SyncConfigFile implements IConfigFile {
         Uri uri = ConfigProvider.convertUri(mContext, mConfigName);
         Uri result = mContentResolver.insert(uri, contentValues);
 
-        if (result == null)
+        if (result == null) {
             return defValue;
+        }
         String r = ConfigProvider.splitConfigParam(result);
         if (TextUtils.isEmpty(r) || TextUtils.equals(r, "null")) {
             return defValue;
@@ -106,8 +109,9 @@ public class SyncConfigFile implements IConfigFile {
         Uri uri = ConfigProvider.convertUri(mContext, mConfigName);
         Uri result = mContentResolver.insert(uri, contentValues);
 
-        if (result == null)
+        if (result == null) {
             return defValue;
+        }
         String r = ConfigProvider.splitConfigParam(result);
         if (TextUtils.isEmpty(r) || TextUtils.equals(r, "null")) {
             return defValue;
@@ -125,8 +129,9 @@ public class SyncConfigFile implements IConfigFile {
         Uri uri = ConfigProvider.convertUri(mContext, mConfigName);
         Uri result = mContentResolver.insert(uri, contentValues);
 
-        if (result == null)
+        if (result == null) {
             return defValue;
+        }
         String r = ConfigProvider.splitConfigParam(result);
         if (TextUtils.isEmpty(r) || TextUtils.equals(r, "null")) {
             return defValue;
