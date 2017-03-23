@@ -10,10 +10,10 @@ import android.os.IBinder;
 import android.os.RemoteException;
 import android.os.SystemClock;
 import android.support.annotation.WorkerThread;
-import android.text.TextUtils;
 
+import com.singun.securelogin.config.IConfigFile;
 import com.singun.securelogin.secure.AppInfoUtils;
-import com.singun.securelogin.secure.SecureUtil;
+import com.singun.securelogin.secure.SecureUtils;
 import com.singun.securelogin.user.LoginInfo;
 import com.singun.securelogin.user.ProfileStorage;
 import com.singun.securelogin.user.UserProfile;
@@ -44,16 +44,20 @@ public class UserLogin {
     }
 
     public boolean isLogin() {
-        UserProfile userProfile = mProfileStorage.getUserProfile();
+        UserProfile userProfile = getUserProfile(true);
         return userProfile.isValid();
     }
 
-    public UserProfile getUserProfile() {
-        return mProfileStorage.getUserProfile();
+    public UserProfile getUserProfile(boolean sync) {
+        return mProfileStorage.getUserProfile(sync);
+    }
+
+    public IConfigFile getConfigFile() {
+        return mProfileStorage.getRealConfigFile();
     }
 
     public void quickLogin(UserProfile userProfile) {
-        mProfileStorage.setUserProfile(userProfile);
+        mProfileStorage.setUserProfile(userProfile, true);
     }
 
     @WorkerThread
@@ -64,12 +68,12 @@ public class UserLogin {
         String token = AppInfoUtils.toHexString(nameData.getBytes());
         loginInfo.setAccountName(accountName);
         loginInfo.setAccountToken(token);
-        mProfileStorage.setUserProfile(loginInfo);
+        mProfileStorage.setUserProfile(loginInfo, true);
         return loginInfo;
     }
 
     public void logout() {
-        mProfileStorage.clearUserProfile();
+        mProfileStorage.clearUserProfile(true);
     }
 
     @WorkerThread
@@ -119,7 +123,7 @@ public class UserLogin {
 
     private LoginInfo getUserInfoFromPackage(Context context, String packageName) {
         final Context appContext = context.getApplicationContext();
-        if (!SecureUtil.checkSecurity(appContext, packageName)) {
+        if (!SecureUtils.checkSecurity(appContext, packageName)) {
             return null;
         }
         final LoginInfo loginInfo = createLoginInfo(appContext, packageName);
@@ -151,7 +155,9 @@ public class UserLogin {
                         loginInfo.setAccountToken(userProfile.getAccountToken());
                     }
                 } catch (RemoteException e) {
+                    e.printStackTrace();
                 } catch (Exception e) {
+                    e.printStackTrace();
                 } finally {
                     try {
                         appContext.unbindService(this);

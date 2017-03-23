@@ -10,6 +10,7 @@ android {
         versionCode 1
         versionName "1.0"
 
+        resValue "string", "login_provider_authorities", "${applicationId}.securelogin.config"
     }
     buildTypes {
         release {

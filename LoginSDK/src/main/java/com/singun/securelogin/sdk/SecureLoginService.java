@@ -5,11 +5,10 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Binder;
 import android.os.IBinder;
-import android.os.Process;
 import android.os.RemoteException;
 import android.support.annotation.Nullable;
 
-import com.singun.securelogin.secure.SecureUtil;
+import com.singun.securelogin.secure.SecureUtils;
 import com.singun.securelogin.user.UserProfile;
 
 /**
@@ -46,7 +45,7 @@ public class SecureLoginService extends Service {
 
         private boolean checkSecurity() {
             String packageName = mContext.getPackageManager().getNameForUid(Binder.getCallingUid());
-            return SecureUtil.checkSecurity(mContext, packageName);
+            return SecureUtils.checkSecurity(mContext, packageName);
         }
 
         @Override
@@ -54,7 +53,7 @@ public class SecureLoginService extends Service {
             if (!checkSecurity()) {
                 return null;
             }
-            return UserLogin.getInstance(mContext).getUserProfile();
+            return UserLogin.getInstance(mContext).getUserProfile(false);
         }
     };
 }

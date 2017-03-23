@@ -3,46 +3,74 @@ package com.singun.securelogin.user;
 import android.content.Context;
 import android.content.SharedPreferences;
 
+import com.singun.securelogin.config.ConfigFile;
+import com.singun.securelogin.config.IConfigFile;
+import com.singun.securelogin.config.SyncConfigFile;
+
+import java.util.ArrayList;
+import java.util.List;
+
 import static android.content.Context.MODE_PRIVATE;
 
 /**
  * Created by singun on 2017/3/22 0022.
  */
 
-public class ProfileStorage {
+public class ProfileStorage extends SyncConfigFile {
     private static final String CONFIG_NAME = "secure_login_config";
 
     private static final String ACCOUNT_TYPE = "account_type";
     private static final String ACCOUNT_NAME = "account_name";
     private static final String ACCOUNT_TOKEN = "account_token";
 
-    private SharedPreferences mSharedPreferences;
+    private IConfigFile mConfigFile;
 
     public ProfileStorage(Context context) {
-        mSharedPreferences = context.getSharedPreferences(CONFIG_NAME, MODE_PRIVATE);
+        super(context, CONFIG_NAME);
+        mConfigFile = new ProfileConfig(context);
     }
 
-    public UserProfile getUserProfile() {
+    private static class ProfileConfig extends ConfigFile {
+        public ProfileConfig(Context context) {
+            super(context, CONFIG_NAME);
+        }
+    }
+
+    public IConfigFile getRealConfigFile() {
+        return getConfigFile(false);
+    }
+
+    private IConfigFile getConfigFile(boolean sync) {
+        if (sync) {
+            return this;
+        } else {
+            return mConfigFile;
+        }
+    }
+
+    public UserProfile getUserProfile(boolean sync) {
+        IConfigFile configFile = getConfigFile(sync);
         UserProfile userProfile = new UserProfile();
-        userProfile.setAccountType(mSharedPreferences.getInt(ACCOUNT_TYPE, 0));
-        userProfile.setAccountName(mSharedPreferences.getString(ACCOUNT_NAME, ""));
-        userProfile.setAccountToken(mSharedPreferences.getString(ACCOUNT_TOKEN, ""));
+        userProfile.setAccountType(configFile.getIntValue(ACCOUNT_TYPE, 0));
+        userProfile.setAccountName(configFile.getStringValue(ACCOUNT_NAME, ""));
+        userProfile.setAccountToken(configFile.getStringValue(ACCOUNT_TOKEN, ""));
         return userProfile;
     }
 
-    public void setUserProfile(UserProfile userProfile) {
-        SharedPreferences.Editor editor = mSharedPreferences.edit();
-        editor.putInt(ACCOUNT_TYPE, userProfile.getAccountType());
-        editor.putString(ACCOUNT_NAME, userProfile.getAccountName());
-        editor.putString(ACCOUNT_TOKEN, userProfile.getAccountToken());
-        editor.apply();
+    public void setUserProfile(UserProfile userProfile, boolean sync) {
+        IConfigFile configFile = getConfigFile(sync);
+        configFile.setIntValue(ACCOUNT_TYPE, userProfile.getAccountType());
+        configFile.setStringValue(ACCOUNT_NAME, userProfile.getAccountName());
+        configFile.setStringValue(ACCOUNT_TOKEN, userProfile.getAccountToken());
     }
 
-    public void clearUserProfile() {
-        SharedPreferences.Editor editor = mSharedPreferences.edit();
-        editor.remove(ACCOUNT_TYPE);
-        editor.remove(ACCOUNT_NAME);
-        editor.remove(ACCOUNT_TOKEN);
-        editor.apply();
+    public void clearUserProfile(boolean sync) {
+        List<String> removeKeys = new ArrayList<>();
+        removeKeys.add(ACCOUNT_TYPE);
+        removeKeys.add(ACCOUNT_NAME);
+        removeKeys.add(ACCOUNT_TOKEN);
+
+        IConfigFile configFile = getConfigFile(sync);
+        configFile.removes(removeKeys);
     }
 }
